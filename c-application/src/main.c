@@ -4,6 +4,9 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
+#define WINDOWHEIGHT 600;
+#define WINDOWWIDTH 800;
+
 int main(int argc, char *argv[])
 {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -42,10 +45,16 @@ int main(int argc, char *argv[])
     
     printf("Vendor:   %s\n", glGetString(GL_VENDOR));
     printf("Renderer: %s\n", glGetString(GL_RENDERER));
-    printf("Version:  %s\n", glGetString(GL_VERSION));   
+    printf("Version:  %s\n", glGetString(GL_VERSION));
 
     bool should_quit = false;
     SDL_Event event;
+
+    int velX = 0;
+    int velY = 0;
+
+    int posX = 400;
+    int posY = 280;
 
     while (!should_quit)
     {
@@ -59,18 +68,45 @@ int main(int argc, char *argv[])
             break;
             case SDL_KEYDOWN:
             printf("Key press detected.\n");
+            if (velX == 0)
+            {
+                velX = 1;
+                break;
+            }
 
+            velX = -velX;
 
             break;
             case SDL_KEYUP:
+            velX = 0;
+            velY = 0;
             printf("Key release detected.\n");
             break;
             default:
             break;
         }
 
-        SDL_SetRenderDrawColor(renderer, 242, 242, 242, 255);
+        SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
         SDL_RenderClear(renderer);
+
+        //Render stuff.
+        SDL_SetRenderDrawColor(renderer, 255, 10, 10, 255);
+
+
+        SDL_RenderDrawLine(renderer, 0, 300, 800, 300);
+
+        SDL_Rect rect;
+        rect.h = 32;
+        rect.w = 32;
+
+        posX = posX + velX;
+        posY = posY + velY;
+        rect.x = posX;
+        rect.y = posY;
+
+        const SDL_Rect *rectPointer = &rect;
+
+        SDL_RenderFillRect(renderer, rectPointer);
 
         SDL_RenderPresent(renderer);
     }

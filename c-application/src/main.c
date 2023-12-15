@@ -3,49 +3,11 @@
 #include <glad/glad.h>
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
-
-#define WINDOWHEIGHT 600;
-#define WINDOWWIDTH 800;
+#include "engine/render.h"
 
 int main(int argc, char *argv[])
 {
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
-    {
-        printf("Could not init SDL: %s\n", SDL_GetError());
-        exit(1);
-    }
-
-    SDL_Window *window = SDL_CreateWindow("MyApp", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL);
-    
-    if (!window)
-    {
-        printf(("Failed to init window: %s\n", SDL_GetError()));
-        exit(1);
-    }
-
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
-
-    if (!renderer)
-    {
-        printf(("Failed to init renderer: %s\n", SDL_GetError()));
-        exit(1);
-    }
-
-    SDL_GL_CreateContext(window);
-    
-    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
-    {
-        printf("Failed to load GL: %s\n", SDL_GetError());
-        exit(1);
-    }
-    
-    printf("Vendor:   %s\n", glGetString(GL_VENDOR));
-    printf("Renderer: %s\n", glGetString(GL_RENDERER));
-    printf("Version:  %s\n", glGetString(GL_VERSION));
+    InitializeWindow(false, 800, 600);
 
     bool should_quit = false;
     SDL_Event event;
@@ -67,20 +29,44 @@ int main(int argc, char *argv[])
             should_quit = true;
             break;
             case SDL_KEYDOWN:
-            printf("Key press detected.\n");
-            if (velX == 0)
+            SDL_KeyboardEvent *key = &event.key;
+            switch(event.key.keysym.sym)
             {
+                case SDLK_LEFT:
+                velX = -1;
+                break;
+                case SDLK_RIGHT:
                 velX = 1;
                 break;
+                case SDLK_UP:
+                velY = -1;
+                break;
+                case SDLK_DOWN:
+                velY = 1;
+                break;
+                default:
+                break;
             }
-
-            velX = -velX;
-
+            printf("\n%s", SDL_GetKeyName(key->keysym.sym));
             break;
             case SDL_KEYUP:
-            velX = 0;
-            velY = 0;
-            printf("Key release detected.\n");
+            switch(event.key.keysym.sym)
+            {
+                case SDLK_LEFT:
+                velX = 0;
+                break;
+                case SDLK_RIGHT:
+                velX = 0;
+                break;
+                case SDLK_UP:
+                velY = 0;
+                break;
+                case SDLK_DOWN:
+                velY = 0;
+                break;
+                default:
+                break;
+            }
             break;
             default:
             break;
@@ -92,8 +78,7 @@ int main(int argc, char *argv[])
         //Render stuff.
         SDL_SetRenderDrawColor(renderer, 255, 10, 10, 255);
 
-
-        SDL_RenderDrawLine(renderer, 0, 300, 800, 300);
+        SDL_RenderDrawLine(renderer, 0, 300, 800, 300); 
 
         SDL_Rect rect;
         rect.h = 32;
@@ -106,9 +91,10 @@ int main(int argc, char *argv[])
 
         const SDL_Rect *rectPointer = &rect;
 
-        SDL_RenderFillRect(renderer, rectPointer);
+        SDL_RenderFillRect(renderer, rectPointer); 
 
         SDL_RenderPresent(renderer);
+
     }
 
     SDL_DestroyRenderer(renderer);

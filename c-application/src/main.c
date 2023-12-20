@@ -3,24 +3,22 @@
 #include <glad/glad.h>
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
-#include "engine/render.h"
+
+#include "constants.h"
+#include "engine/window.h"
 
 int main(int argc, char *argv[])
 {
-    InitializeWindow(false, 800, 600);
+    /// INITIALIZE WINDOW AND RENDERER ETC
+    InitializeWindow(false, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    /// START FUNCTION
 
     bool should_quit = false;
     SDL_Event event;
 
-    int velX = 0;
-    int velY = 0;
-
-    int posX = 400;
-    int posY = 280;
-
     while (!should_quit)
     {
-        SDL_Delay(10);
         SDL_PollEvent(&event);
 
         switch (event.type)
@@ -30,19 +28,16 @@ int main(int argc, char *argv[])
             break;
             case SDL_KEYDOWN:
             SDL_KeyboardEvent *key = &event.key;
-            switch(event.key.keysym.sym)
+            switch(event.key.keysym.sym) 
             {
                 case SDLK_LEFT:
-                velX = -1;
+
                 break;
                 case SDLK_RIGHT:
-                velX = 1;
                 break;
                 case SDLK_UP:
-                velY = -1;
                 break;
                 case SDLK_DOWN:
-                velY = 1;
                 break;
                 default:
                 break;
@@ -53,16 +48,12 @@ int main(int argc, char *argv[])
             switch(event.key.keysym.sym)
             {
                 case SDLK_LEFT:
-                velX = 0;
                 break;
                 case SDLK_RIGHT:
-                velX = 0;
                 break;
                 case SDLK_UP:
-                velY = 0;
                 break;
                 case SDLK_DOWN:
-                velY = 0;
                 break;
                 default:
                 break;
@@ -72,29 +63,16 @@ int main(int argc, char *argv[])
             break;
         }
 
-        SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
-        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // set background color.
+        SDL_RenderClear(renderer); //Sets the view to background color.
 
         //Render stuff.
-        SDL_SetRenderDrawColor(renderer, 255, 10, 10, 255);
+        SDL_SetRenderDrawColor(renderer, 255, 10, 10, 255); //set color to red
+        SDL_RenderDrawLine(renderer, 0, 300, 800, 300); //draw line
 
-        SDL_RenderDrawLine(renderer, 0, 300, 800, 300); 
+        SDL_SetRenderDrawColor(renderer, 50, 0, 255, 255);
 
-        SDL_Rect rect;
-        rect.h = 32;
-        rect.w = 32;
-
-        posX = posX + velX;
-        posY = posY + velY;
-        rect.x = posX;
-        rect.y = posY;
-
-        const SDL_Rect *rectPointer = &rect;
-
-        SDL_RenderFillRect(renderer, rectPointer); 
-
-        SDL_RenderPresent(renderer);
-
+        SDL_RenderPresent(renderer); //render it.
     }
 
     SDL_DestroyRenderer(renderer);

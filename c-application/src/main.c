@@ -1,83 +1,101 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include <glad/glad.h>
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+#include <glad/glad.h>
 
 #include "constants.h"
 #include "engine/window.h"
+#include "engine/events.h"
+#include "engine/input.h"
+
+float delta_time;
+Uint64 last_frame_time = 0;
+bool should_quit = false;
+
+void setup()
+{
+    //To do 
+}
+
+void pre_update() //Lock fps and calculate deltatime.
+{
+    int time_to_wait = TARGET_FRAME_TIME - (SDL_GetTicks() - last_frame_time);
+
+    if (time_to_wait > 0 && time_to_wait <= TARGET_FRAME_TIME)
+    {
+        SDL_Delay(time_to_wait);
+    }
+    //To do
+    float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f;
+    printf("Deltatime = %f\n", delta_time);
+}
+
+void update()
+{
+
+}
+
+void post_update()
+{
+    last_frame_time = SDL_GetTicks();
+}
+
+void render()
+{
+
+    glClearColor(1.0, 0.5, 0.5, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+
+
+    /* //Render stuff.
+    SDL_Surface* rect_surface;
+    SDL_Color rect_color;
+    rect_color.r = 10;
+    rect_color.g = 10;
+    rect_color.b = 10;
+    SDL_Rect rect;
+    rect.h = 128;
+    rect.w = 256;
+    rect.x = 100;
+    rect.y = 100;
+
+    SDL_SetRenderDrawColor(renderer, 10, 10, 10, 255); //set color to red
+
+    SDL_RenderFillRect(renderer, &rect); */
+
+    SDL_GL_SwapWindow(window);
+
+    
+/*     SDL_RenderPresent(renderer); //render it. */
+}
 
 int main(int argc, char *argv[])
 {
     /// INITIALIZE WINDOW AND RENDERER ETC
-    InitializeWindow(false, WINDOW_WIDTH, WINDOW_HEIGHT);
+    initialize_window(FULLSCREEN, WINDOW_WIDTH, WINDOW_HEIGHT);
+    setup();
 
-    /// START FUNCTION
-
-    bool should_quit = false;
-    SDL_Event event;
-
+    printf("Entering main loop...\n");
     while (!should_quit)
     {
-        SDL_PollEvent(&event);
-
-        switch (event.type)
+        if (event_system())
         {
-            case SDL_QUIT:
-            should_quit = true;
-            break;
-            case SDL_KEYDOWN:
-            SDL_KeyboardEvent *key = &event.key;
-            switch(event.key.keysym.sym) 
-            {
-                case SDLK_LEFT:
-
-                break;
-                case SDLK_RIGHT:
-                break;
-                case SDLK_UP:
-                break;
-                case SDLK_DOWN:
-                break;
-                default:
-                break;
-            }
-            printf("\n%s", SDL_GetKeyName(key->keysym.sym));
-            break;
-            case SDL_KEYUP:
-            switch(event.key.keysym.sym)
-            {
-                case SDLK_LEFT:
-                break;
-                case SDLK_RIGHT:
-                break;
-                case SDLK_UP:
-                break;
-                case SDLK_DOWN:
-                break;
-                default:
-                break;
-            }
-            break;
-            default:
             break;
         }
 
-        SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255); // set background color.
-        SDL_RenderClear(renderer); //Sets the view to background color.
-
-        //Render stuff.
-        SDL_SetRenderDrawColor(renderer, 255, 10, 10, 255); //set color to red
-        SDL_RenderDrawLine(renderer, 0, 300, 800, 300); //draw line
-
-        SDL_SetRenderDrawColor(renderer, 50, 0, 255, 255);
-
-        SDL_RenderPresent(renderer); //render it.
+        pre_update();
+        update();
+        post_update();
+        render();
     }
 
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+
+
+    destroy_window();
 
     return 0;
 }
+

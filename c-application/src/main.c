@@ -1,81 +1,148 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
-#include <glad/glad.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 
 #include "constants.h"
-#include "engine/window.h"
-#include "engine/events.h"
-#include "engine/input.h"
+#include "window.h"
+#include "events.h"
+#include "input.h"
+#include "entity.h"
+#include "texture.h"
+#include "renderer.h"
 
 float delta_time;
-Uint64 last_frame_time = 0;
+float frame_time;
+Uint64 begin_frame_time = 0;
+Uint64 end_frame_time = 0;
 bool should_quit = false;
+
+int prev_key_f = 0;
+
+Entity* enemy;
+Entity* maya;
+
+Vector2 acceleration;
+Vector2 velocity;
+
+void setup();
+void pre_update();
+void update();
+void input();
+void post_update();
+void render();
+void game_shutdown();
 
 void setup()
 {
-    //To do 
+    enemy = entity_create(69, 69, 69, 69, 0, SDL_FLIP_NONE, 1, 0, true);
+    maya = entity_create(200, 200, 69, 69, 0, SDL_FLIP_NONE, 1, 0, true);
+    maya->sprite.color.g = 0;
+    enemy->sprite.color.r = 0;
+    maya->sprite.color.b = 0;
 }
 
 void pre_update() //Lock fps and calculate deltatime.
 {
-    int time_to_wait = TARGET_FRAME_TIME - (SDL_GetTicks() - last_frame_time);
+    begin_frame_time = SDL_GetPerformanceCounter();
+}
 
-    if (time_to_wait > 0 && time_to_wait <= TARGET_FRAME_TIME)
+void input()
+{
+    if (key_ctrl_l && key_w)
     {
-        SDL_Delay(time_to_wait);
+        game_shutdown();
     }
-    //To do
-    float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f;
-    printf("Deltatime = %f\n", delta_time);
+
+    if (key_f - prev_key_f > 0)
+    {
+        if (fullscreen)
+        {
+            printf("Changing to windowed mode...\n\n");
+            fullscreen = false;
+            SDL_SetWindowSize(window, WINDOW_WIDTH, WINDOW_HEIGHT);
+            SDL_SetWindowFullscreen(window, 0);
+        }
+        else
+        {
+            printf("Changing to fullscreen mode...\n\n");
+            fullscreen = true;
+            SDL_SetWindowSize(window, 1920, 1080);
+            SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+        }
+    }
+
+    prev_key_f = key_f;
 }
 
 void update()
 {
+    input();
 
+    float max_velocity = 20.0f;
+
+    Vector2 input;
+    Vector2 normalized_input;
+
+    input.x = (key_right - key_left);
+    input.y = (key_down - key_up);
+
+    normalized_input = mymath_vector2_normalize(&input);
+    
+    acceleration.x = normalized_input.x * 500.0f;
+    acceleration.y = normalized_input.y * 500.0f;  //acceleration range is <-1000, 1000>
+
+    acceleration.x -= velocity.x * delta_time * max_velocity;
+    acceleration.y -= velocity.y * delta_time * max_velocity;
+  
+    velocity.x += acceleration.x * delta_time; //Velocity gets added approx. <-4, 4> which on 240 [fps] 0.0041 [spf] every frame.
+    velocity.y += acceleration.y * delta_time;
+
+    maya->position.x += velocity.x * delta_time;
+    maya->position.y += velocity.y * delta_time;
 }
 
 void post_update()
 {
-    last_frame_time = SDL_GetTicks();
+    end_frame_time = SDL_GetPerformanceCounter();
+
+    frame_time = (float)(end_frame_time - begin_frame_time) / (float)SDL_GetPerformanceFrequency() * 1000.0f; //in ms
+
+    SDL_Delay((int)abs(floor((TARGET_FRAME_TIME - frame_time)))); // wait the rest of the needed time
+
+    delta_time = (float)((SDL_GetPerformanceCounter() - begin_frame_time) / (float)SDL_GetPerformanceFrequency());
+
+    char entry[200] = "Life Game v0.01, FPS = ";
+
+    char buf1[50];
+
+    char buf2[50];
+
+    gcvt(1.0f / delta_time, 5, buf1);
+
+    strcat(entry, buf1);
+
+    strcat(entry, ", Delta time = ");
+
+    gcvt(delta_time, 5, buf2);
+
+    strcat(entry, buf2);
+
+    SDL_SetWindowTitle(window, entry);
 }
 
-void render()
-{
 
-    glClearColor(1.0, 0.5, 0.5, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
-
-    /* //Render stuff.
-    SDL_Surface* rect_surface;
-    SDL_Color rect_color;
-    rect_color.r = 10;
-    rect_color.g = 10;
-    rect_color.b = 10;
-    SDL_Rect rect;
-    rect.h = 128;
-    rect.w = 256;
-    rect.x = 100;
-    rect.y = 100;
-
-    SDL_SetRenderDrawColor(renderer, 10, 10, 10, 255); //set color to red
-
-    SDL_RenderFillRect(renderer, &rect); */
-
-    SDL_GL_SwapWindow(window);
-
-    
-/*     SDL_RenderPresent(renderer); //render it. */
-}
 
 int main(int argc, char *argv[])
 {
     /// INITIALIZE WINDOW AND RENDERER ETC
     initialize_window(FULLSCREEN, WINDOW_WIDTH, WINDOW_HEIGHT);
+    tex_load_all();
+    entity_system_init();
     setup();
 
     printf("Entering main loop...\n");
@@ -89,13 +156,17 @@ int main(int argc, char *argv[])
         pre_update();
         update();
         post_update();
-        render();
+        renderer_render();
     }
 
-
-
-    destroy_window();
+    game_shutdown();
 
     return 0;
 }
 
+void game_shutdown()
+{
+    entity_system_terminate();
+    tex_unload_all();
+    destroy_window();
+}

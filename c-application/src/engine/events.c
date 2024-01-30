@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include "input.h"
+#include "events.h"
 
 bool event_system(void)
 {

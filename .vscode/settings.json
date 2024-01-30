@@ -5,6 +5,11 @@
         "stdbool.h": "c",
         "input.h": "c",
         "sdl_opengl.h": "c",
-        "events.h": "c"
+        "events.h": "c",
+        "stdlib.h": "c",
+        "sdl_ttf.h": "c",
+        "entity.h": "c",
+        "math3dhelper.h": "c",
+        "mymath.h": "c"
     }
 }

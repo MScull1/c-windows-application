@@ -87,9 +87,7 @@ void update() // Game stuff
 {
     input();
 
-
-
-    float max_velocity = 20.0f;
+    float max_velocity = 200.0f;
 
     Vector2 input;
     Vector2 normalized_input;

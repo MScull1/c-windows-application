@@ -44,9 +44,9 @@ void setup()
 {
     enemy = entity_create(69, 69, 69, 69, 0, SDL_FLIP_NONE, 1, 0, true);
     maya = entity_create(200, 200, 69, 69, 0, SDL_FLIP_NONE, 1, 0, true);
-    maya->sprite.color.g = 0;
-    enemy->sprite.color.r = 0;
-    maya->sprite.color.b = 0;
+    maya->sprite->color.g = 0;
+    enemy->sprite->color.r = 0;
+    maya->sprite->color.b = 0;
 }
 
 void pre_update() //Lock fps and calculate deltatime.
@@ -182,6 +182,7 @@ void game_initialize()
 {
     initialize_window(FULLSCREEN, WINDOW_WIDTH, WINDOW_HEIGHT);
     tex_load_all();
+    sprite_system_init();
     entity_system_init();
     setup();
 }
@@ -189,6 +190,7 @@ void game_initialize()
 void game_shutdown()
 {
     entity_system_terminate();
+    sprite_system_terminate(); 
     tex_unload_all();
     destroy_window();
 }

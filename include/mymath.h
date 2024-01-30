@@ -1,14 +1,13 @@
 #ifndef MYMATH_HEADER_
 #define MYMATH_HEADER_
 
-
 typedef struct Vector2
 {
     float x;
     float y;
 } Vector2;
 
-const Vector2 mymath_vector2_zero;
+const extern Vector2 mymath_vector2_zero;
 
 Vector2 mymath_vector2_add(Vector2* vec1, Vector2* vec2);
 Vector2 mymath_vector2_add(Vector2* vec1, Vector2* vec2);

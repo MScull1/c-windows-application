@@ -17,11 +17,6 @@ Entity* entity_create(float x, float y, float w, float h, float angle, SDL_Rende
     entity_array_size++;
 
     Entity** entity_new_array;
-    SDL_Color color;
-    color.r = 255;
-    color.g = 255;
-    color.b = 255;
-    color.a = 255;
 
     if (entity_array_size != 1) //if not at first element. Create new element.
     {
@@ -36,22 +31,32 @@ Entity* entity_create(float x, float y, float w, float h, float angle, SDL_Rende
 
     Entity* new_entity_pointer = (Entity*)malloc(sizeof(Entity));
 
-    new_entity_pointer->sprite.angle = angle;
+    new_entity_pointer->position.x = x;
+    new_entity_pointer->position.y = y;
+    new_entity_pointer->active = active;
+
+    Sprite* new_sprite = sprite_create(x, y, w, h, angle, flip, depth, texture_id, false, true);
+
+    new_entity_pointer->sprite = new_sprite;
+
+/*     new_entity_pointer->sprite.angle = angle;
     new_entity_pointer->sprite.flip = flip;
     new_entity_pointer->sprite.depth = depth;
     new_entity_pointer->sprite.color = color;
-    new_entity_pointer->position.x = x;
-    new_entity_pointer->position.y = y;
     new_entity_pointer->sprite.size.x = w;
     new_entity_pointer->sprite.size.y = h;
-    new_entity_pointer->sprite.texture_id = texture_id;
-    new_entity_pointer->active = active;
+    new_entity_pointer->sprite.texture_id = texture_id; */
 
     entity_array[entity_array_size - 1] = new_entity_pointer;
 
     printf("New entity pointer: %zu\n", new_entity_pointer);
 
     return new_entity_pointer;
+}
+
+void entity_destroy(Entity* entity)
+{
+
 }
 
 void entity_system_terminate(void)

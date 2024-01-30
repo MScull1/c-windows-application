@@ -20,7 +20,6 @@ typedef struct Entity
     bool active;
     Vector2 position;
     Sprite sprite;
-
 } Entity;
 
 Entity** entity_array;

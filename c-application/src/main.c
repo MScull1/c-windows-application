@@ -16,6 +16,8 @@
 #include "renderer.h"
 
 float delta_time;
+float average_delta_time;
+int average_delta_time_counter;
 float frame_time;
 Uint64 begin_frame_time = 0;
 Uint64 end_frame_time = 0;
@@ -36,6 +38,7 @@ void input();
 void post_update();
 void render();
 void game_shutdown();
+void game_initialize();
 
 void setup()
 {
@@ -48,7 +51,7 @@ void setup()
 
 void pre_update() //Lock fps and calculate deltatime.
 {
-    begin_frame_time = SDL_GetPerformanceCounter();
+    begin_frame_time = SDL_GetTicks();
 }
 
 void input()
@@ -56,6 +59,7 @@ void input()
     if (key_ctrl_l && key_w)
     {
         game_shutdown();
+        return;
     }
 
     if (key_f - prev_key_f > 0)
@@ -79,9 +83,11 @@ void input()
     prev_key_f = key_f;
 }
 
-void update()
+void update() // Game stuff
 {
     input();
+
+
 
     float max_velocity = 20.0f;
 
@@ -108,13 +114,14 @@ void update()
 
 void post_update()
 {
-    end_frame_time = SDL_GetPerformanceCounter();
+    end_frame_time = SDL_GetTicks();
 
-    frame_time = (float)(end_frame_time - begin_frame_time) / (float)SDL_GetPerformanceFrequency() * 1000.0f; //in ms
+    //frame_time = (float)(end_frame_time - begin_frame_time) / (float)SDL_GetPerformanceFrequency() * 1000.0f; //in ms
+    frame_time = end_frame_time - begin_frame_time; // in ms
 
-    SDL_Delay((int)abs(floor((TARGET_FRAME_TIME - frame_time)))); // wait the rest of the needed time
+    SDL_Delay((int)abs((TARGET_FRAME_TIME - frame_time))); // wait the rest of the needed time
 
-    delta_time = (float)((SDL_GetPerformanceCounter() - begin_frame_time) / (float)SDL_GetPerformanceFrequency());
+    delta_time = (SDL_GetTicks() - begin_frame_time) / 1000.0f; // in s
 
     char entry[200] = "Life Game v0.01, FPS = ";
 
@@ -122,30 +129,35 @@ void post_update()
 
     char buf2[50];
 
-    gcvt(1.0f / delta_time, 5, buf1);
+    average_delta_time += delta_time; // sum of deltatime
 
-    strcat(entry, buf1);
+    average_delta_time_counter++;
 
-    strcat(entry, ", Delta time = ");
+    if (average_delta_time_counter >= AVERAGE_DELTA_TIME_COUNT)
+    {
+        average_delta_time /= AVERAGE_DELTA_TIME_COUNT;
 
-    gcvt(delta_time, 5, buf2);
+        average_delta_time_counter = 0;
 
-    strcat(entry, buf2);
+        gcvt(1.0f / average_delta_time, 5, buf1);
 
-    SDL_SetWindowTitle(window, entry);
+        strcat(entry, buf1);
+
+        strcat(entry, ", Delta time = ");
+
+        gcvt(average_delta_time, 5, buf2);
+
+        strcat(entry, buf2);
+
+        SDL_SetWindowTitle(window, entry);
+    }
 }
-
-
 
 int main(int argc, char *argv[])
 {
-    /// INITIALIZE WINDOW AND RENDERER ETC
-    initialize_window(FULLSCREEN, WINDOW_WIDTH, WINDOW_HEIGHT);
-    tex_load_all();
-    entity_system_init();
-    setup();
+    /// INITIALIZE GAME AND RENDERER ETC
+    game_initialize();
 
-    printf("Entering main loop...\n");
     while (!should_quit)
     {
         if (event_system())
@@ -160,8 +172,15 @@ int main(int argc, char *argv[])
     }
 
     game_shutdown();
-
     return 0;
+}
+
+void game_initialize()
+{
+    initialize_window(FULLSCREEN, WINDOW_WIDTH, WINDOW_HEIGHT);
+    tex_load_all();
+    entity_system_init();
+    setup();
 }
 
 void game_shutdown()

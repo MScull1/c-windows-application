@@ -68,14 +68,19 @@ void input()
         {
             printf("Changing to windowed mode...\n\n");
             fullscreen = false;
-            SDL_SetWindowSize(window, WINDOW_WIDTH, WINDOW_HEIGHT);
             SDL_SetWindowFullscreen(window, 0);
+            SDL_SetWindowSize(window, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+
         }
         else
         {
+            SDL_DisplayMode DM;
+            SDL_GetCurrentDisplayMode(0, &DM);
+
             printf("Changing to fullscreen mode...\n\n");
             fullscreen = true;
-            SDL_SetWindowSize(window, 1920, 1080);
+            SDL_SetWindowSize(window, DM.w, DM.h);
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
         }
     }
